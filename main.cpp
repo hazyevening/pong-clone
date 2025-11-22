@@ -4,8 +4,6 @@
 
 
 
-
-
 int main() {
 
     std::string screen {"TITLE"};
@@ -19,20 +17,23 @@ int main() {
     constexpr Color bgColor {BLACK};
 
     // player variables
-    constexpr int playerHeight {100};
-    constexpr int playerWidth {20};
-    constexpr int playerPosX {100};    
-    int playerPosY {(screenHeight / 2) - playerHeight};    
+    constexpr float playerHeight {100};
+    constexpr float playerWidth {20};
+    constexpr float playerPosX {100};
+    float playerPosY {(screenHeight / 2) - playerHeight};    
     constexpr int playerSpeed {25};    
+    Rectangle playerBounds = {playerPosX, playerPosY, playerWidth, playerHeight};
     constexpr Color playerColor {WHITE}; 
 
     // ball variables
-    constexpr int ballWidth {15};
-    constexpr int ballHeight {15};
-    int ballPosX {(screenWidth / 2) - ballWidth};
-    int ballPosY {(screenHeight / 2) - ballHeight};
-    int ballSpeed {10};
+    constexpr float ballWidth {15};
+    constexpr float ballHeight {15};
+    float ballPosX {(screenWidth / 2) - ballWidth};
+    float ballPosY {(screenHeight / 2) - ballHeight};
+    float ballSpeed {10};
     bool invertBallDirectionV {false};
+    bool invertBallDirectionH {false};
+    Rectangle ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
     constexpr Color ballColor {WHITE};
     
     InitWindow(screenWidth, screenHeight, "raylib test");
@@ -50,12 +51,20 @@ int main() {
         else if (screen == "GAME") {
             ++framesCounter;
 
-            ballPosX -= ballSpeed;
+
+            // Invert ball direction if it hits the screen vertical boundaries
             if (!invertBallDirectionV) {
                 ballPosY += ballSpeed;
             }
             else {
                 ballPosY -= ballSpeed;
+            }
+            // Invert ball direction if it hits a paddle
+            if (!invertBallDirectionH) {
+                ballPosX -= ballSpeed;
+            }
+            else {
+                ballPosX += ballSpeed;
             }
 
             // Detect player input
@@ -65,6 +74,25 @@ int main() {
             if (IsKeyDown(KEY_UP)) {
                 playerPosY -= playerSpeed;
             }
+
+
+            /* std::cerr << "Player position X: " << playerPosX << "\n";
+            std::cerr << "Player position Y: " << playerPosY << "\n";
+            std::cerr << "Player width: " << playerWidth << "\n";
+            std::cerr << "Player height: " << playerHeight << "\n";   
+
+            std::cerr << "Ball position X: " << ballPosX << "\n";
+            std::cerr << "Ball position X: " << ballPosY << "\n";
+            std::cerr << "Ball width: " << ballWidth << "\n";
+            std::cerr << "Ball height: " << ballHeight << "\n"; */
+
+            // Collision bs
+            playerBounds = {playerPosX, playerPosY, playerWidth, playerHeight};
+            ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
+            if (CheckCollisionRecs(playerBounds, ballBounds)) {
+               invertBallDirectionH = !invertBallDirectionH; 
+            }       
+
 
             // Change screen state
             if (IsKeyPressed(KEY_ENTER)) {
@@ -99,6 +127,7 @@ int main() {
             if (ballPosY <= 0) {
                 ballPosY = 0;
                 invertBallDirectionV = !invertBallDirectionV;
+                std::cerr << invertBallDirectionV;
             }
             if (ballPosY + ballHeight >= screenHeight) {
                 ballPosY = screenHeight - ballHeight;
@@ -110,8 +139,8 @@ int main() {
                 ballPosY = (screenHeight / 2) - ballHeight;
             }
  
-            DrawRectangle(playerPosX, playerPosY, playerWidth, playerHeight, playerColor);
-            DrawRectangle(ballPosX, ballPosY, ballWidth, ballHeight, ballColor);
+            DrawRectangle(playerPosX, static_cast<int>(playerPosY), playerWidth, playerHeight, playerColor);
+            DrawRectangle(static_cast<int>(ballPosX), static_cast<int>(ballPosY), ballWidth, ballHeight, ballColor);
         }        
         else if (screen == "ENDING") {
             ClearBackground(bgColor);
