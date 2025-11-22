@@ -4,6 +4,25 @@
 
 
 
+float calcPos(char direction, bool invert, float speed) {
+    if (direction == 'x' && invert) {
+        return -speed;
+    }
+    else if (direction == 'x' && !invert) {
+        return speed;
+    }
+    
+    if (direction == 'y' && invert) {
+        return -speed;
+    } 
+    else if (direction == 'y' && !invert) {
+        return speed;
+    }
+    else {
+        return 1.0;
+    }
+}
+
 int main() {
 
     std::string screen {"TITLE"};
@@ -38,7 +57,9 @@ int main() {
     constexpr float ballHeight {15};
     float ballPosX {(screenWidth / 2) - ballWidth};
     float ballPosY {(screenHeight / 2) - ballHeight};
-    float ballSpeed {10};
+    float ballSpeed {15};    
+    //float angleModifierX {0};
+    //float angleModifierY {0};
     bool invertBallDirectionV {false};
     bool invertBallDirectionH {false};
     Rectangle ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
@@ -59,21 +80,8 @@ int main() {
         else if (screen == "GAME") {
             ++framesCounter;
 
-
-            // Invert ball direction if it hits the screen vertical boundaries
-            if (!invertBallDirectionV) {
-                ballPosY += ballSpeed;
-            }
-            else {
-                ballPosY -= ballSpeed;
-            }
-            // Invert ball direction if it hits a paddle
-            if (!invertBallDirectionH) {
-                ballPosX -= ballSpeed;
-            }
-            else {
-                ballPosX += ballSpeed;
-            }
+            ballPosY += (calcPos('y', invertBallDirectionV, ballSpeed));
+            ballPosX += (calcPos('x', invertBallDirectionH, ballSpeed));
 
             // Detect player input
             if (IsKeyDown(KEY_S)) {
@@ -104,9 +112,11 @@ int main() {
             player1Bounds = {player1PosX, player1PosY, playerWidth, playerHeight};
             player2Bounds = {player2PosX, player2PosY, playerWidth, playerHeight};
             ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
+
             if (CheckCollisionRecs(player1Bounds, ballBounds) || CheckCollisionRecs(player2Bounds, ballBounds)) {
-               invertBallDirectionH = !invertBallDirectionH; 
+               invertBallDirectionH = !invertBallDirectionH;
             }       
+            
 
 
             // Change screen state
