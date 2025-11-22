@@ -19,11 +19,19 @@ int main() {
     // player variables
     constexpr float playerHeight {100};
     constexpr float playerWidth {20};
-    constexpr float playerPosX {100};
-    float playerPosY {(screenHeight / 2) - playerHeight};    
     constexpr int playerSpeed {25};    
-    Rectangle playerBounds = {playerPosX, playerPosY, playerWidth, playerHeight};
     constexpr Color playerColor {WHITE}; 
+
+    //player 1 variables (refactor when I learn structs or classes in CPP)
+    constexpr float player1PosX {100};
+    float player1PosY {(screenHeight / 2) - playerHeight};    
+    Rectangle player1Bounds = {player1PosX, player1PosY, playerWidth, playerHeight};
+
+    //player 2 variables (same as above)
+    constexpr float player2PosX {screenWidth - 100};
+    float player2PosY {(screenHeight / 2) - playerHeight};    
+    Rectangle player2Bounds = {player2PosX, player2PosY, playerWidth, playerHeight};
+
 
     // ball variables
     constexpr float ballWidth {15};
@@ -68,11 +76,17 @@ int main() {
             }
 
             // Detect player input
+            if (IsKeyDown(KEY_S)) {
+                player1PosY += playerSpeed;
+            }
+            if (IsKeyDown(KEY_W)) {
+                player1PosY -= playerSpeed;
+            }
             if (IsKeyDown(KEY_DOWN)) {
-                playerPosY += playerSpeed;
+                player2PosY += playerSpeed;
             }
             if (IsKeyDown(KEY_UP)) {
-                playerPosY -= playerSpeed;
+                player2PosY -= playerSpeed;
             }
 
 
@@ -87,9 +101,10 @@ int main() {
             std::cerr << "Ball height: " << ballHeight << "\n"; */
 
             // Collision bs
-            playerBounds = {playerPosX, playerPosY, playerWidth, playerHeight};
+            player1Bounds = {player1PosX, player1PosY, playerWidth, playerHeight};
+            player2Bounds = {player2PosX, player2PosY, playerWidth, playerHeight};
             ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
-            if (CheckCollisionRecs(playerBounds, ballBounds)) {
+            if (CheckCollisionRecs(player1Bounds, ballBounds) || CheckCollisionRecs(player2Bounds, ballBounds)) {
                invertBallDirectionH = !invertBallDirectionH; 
             }       
 
@@ -116,11 +131,17 @@ int main() {
         else if (screen == "GAME") {
             ClearBackground(bgColor);
             // Reset player position if out of bounds
-            if (playerPosY <= 0) {
-                playerPosY = 0;
+            if (player1PosY <= 0) {
+                player1PosY = 0;
             }
-            if ((playerPosY + playerHeight) >= screenHeight) {
-                playerPosY = screenHeight - playerHeight;
+            if ((player1PosY + playerHeight) >= screenHeight) {
+                player1PosY = screenHeight - playerHeight;
+            }
+            if (player2PosY <= 0) {
+                player2PosY = 0;
+            }
+            if ((player2PosY + playerHeight) >= screenHeight) {
+                player2PosY = screenHeight - playerHeight;
             }
 
             // Reset ball position if out of vertical bounds
@@ -139,7 +160,8 @@ int main() {
                 ballPosY = (screenHeight / 2) - ballHeight;
             }
  
-            DrawRectangle(playerPosX, static_cast<int>(playerPosY), playerWidth, playerHeight, playerColor);
+            DrawRectangle(player1PosX, static_cast<int>(player1PosY), playerWidth, playerHeight, playerColor);
+            DrawRectangle(player2PosX, static_cast<int>(player2PosY), playerWidth, playerHeight, playerColor);
             DrawRectangle(static_cast<int>(ballPosX), static_cast<int>(ballPosY), ballWidth, ballHeight, ballColor);
         }        
         else if (screen == "ENDING") {
