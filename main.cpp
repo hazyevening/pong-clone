@@ -2,26 +2,97 @@
 #include "raylib.h"
 #include <string> 
 
+namespace Interface {
+    constexpr int screenWidth {1920};
+    constexpr int screenHeight {1080};
+    constexpr Color txtColor {WHITE};
+    constexpr Color bgColor {BLACK};
+}
 
-
-float calcPos(char direction, bool invert, float speed) {
-    if (direction == 'x' && invert) {
-        return -speed;
-    }
-    else if (direction == 'x' && !invert) {
-        return speed;
-    }
+// Refactor namespaces when I learn Classes
+namespace Players {
+    // general player variables
+    constexpr float height {150};
+    constexpr float width {20};
+    constexpr int speed {25};    
+    constexpr Color color {WHITE}; 
     
-    if (direction == 'y' && invert) {
-        return -speed;
-    } 
-    else if (direction == 'y' && !invert) {
-        return speed;
+}
+
+namespace Player1 {
+    constexpr float x {100};
+    float y {(Interface::screenHeight / 2) - Players::height};    
+    Rectangle player1Bounds = {Player1::x, Player1::y, Players::width, Players::height};
+}
+
+namespace Player2{
+    constexpr float x {Interface::screenWidth - 100};
+    float y {(Interface::screenHeight / 2) - Players::height};        
+    Rectangle player2Bounds = {Player2::x, Player2::y, Players::width, Players::height};
+}
+
+namespace Ball {
+    constexpr float width {15};
+    constexpr float height {15};
+    float x {(Interface::screenWidth / 2) - Ball::width};
+    float y {(Interface::screenHeight / 2) - Ball::height};
+    float speed {15};    
+    float xModifier {0};
+    float yModifier {0};
+    bool invertY {false};
+    bool invertX {false};
+    Rectangle bounds = {Ball::x, Ball::y, Ball::width, Ball::height};
+    constexpr Color color {WHITE};
+    
+}
+
+
+
+float calcBallPosX(bool invert, bool xModifier, float speed) {
+
+    if (invert) {
+        speed = -(speed + xModifier);
+    }
+    else if (!invert) {
+        speed += xModifier;
+    }
+
+    return speed;
+}
+
+float calcBallPosY(bool invert, bool yModifier, float speed) {
+
+    if (invert) {
+        speed = -(speed + yModifier);
+    }
+    else if (!invert) {
+        speed += yModifier;
+    }
+
+    return speed;
+}
+
+void collisionLogic() {
+    Ball::invertX = !Ball::invertX;
+}
+
+/*
+
+float checkSubCollision(Rectangle playerBounds, Rectangle ballBounds) {
+    Rectangle playerTopHalf = {playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height / 2 + playerBounds.y};
+    Rectangle playerBottomHalf = {playerBounds.x, (playerBounds.height / 2) + playerBounds.y, playerBounds.width, (playerBounds.height) + playerBounds.y};
+    // Rectangle(float x, float y, float width, float height)
+    
+    if (CheckCollisionRecs(playerTopHalf, ballBounds)) {
+        return 0.0f;   
+    }
+    else if (CheckCollisionRecs(playerBottomHalf, ballBounds)){
+        return 50.0f; 
     }
     else {
-        return 1.0;
+        return 50000000000000.0f;    
     }
-}
+} */
 
 int main() {
 
@@ -29,46 +100,12 @@ int main() {
 
     int framesCounter {};
 
-    // interface variables
-    constexpr int screenWidth {1920};
-    constexpr int screenHeight {1080};
-    constexpr Color txtColor {WHITE};
-    constexpr Color bgColor {BLACK};
-
-    // player variables
-    constexpr float playerHeight {100};
-    constexpr float playerWidth {20};
-    constexpr int playerSpeed {25};    
-    constexpr Color playerColor {WHITE}; 
-
-    //player 1 variables (refactor when I learn structs or classes in CPP)
-    constexpr float player1PosX {100};
-    float player1PosY {(screenHeight / 2) - playerHeight};    
-    Rectangle player1Bounds = {player1PosX, player1PosY, playerWidth, playerHeight};
-
-    //player 2 variables (same as above)
-    constexpr float player2PosX {screenWidth - 100};
-    float player2PosY {(screenHeight / 2) - playerHeight};    
-    Rectangle player2Bounds = {player2PosX, player2PosY, playerWidth, playerHeight};
-
-
-    // ball variables
-    constexpr float ballWidth {15};
-    constexpr float ballHeight {15};
-    float ballPosX {(screenWidth / 2) - ballWidth};
-    float ballPosY {(screenHeight / 2) - ballHeight};
-    float ballSpeed {15};    
-    //float angleModifierX {0};
-    //float angleModifierY {0};
-    bool invertBallDirectionV {false};
-    bool invertBallDirectionH {false};
-    Rectangle ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
-    constexpr Color ballColor {WHITE};
-    
-    InitWindow(screenWidth, screenHeight, "raylib test");
+    InitWindow(Interface::screenWidth, Interface::screenHeight, "raylib test");
     SetTargetFPS(60);    
 
+    // Game Loop
     while (!WindowShouldClose()) {
+
         //UPDATE    
         if (screen == "TITLE") {
             ++framesCounter;
@@ -79,46 +116,47 @@ int main() {
         }
         else if (screen == "GAME") {
             ++framesCounter;
+        
 
-            ballPosY += (calcPos('y', invertBallDirectionV, ballSpeed));
-            ballPosX += (calcPos('x', invertBallDirectionH, ballSpeed));
-
-            // Detect player input
-            if (IsKeyDown(KEY_S)) {
-                player1PosY += playerSpeed;
-            }
-            if (IsKeyDown(KEY_W)) {
-                player1PosY -= playerSpeed;
-            }
-            if (IsKeyDown(KEY_DOWN)) {
-                player2PosY += playerSpeed;
-            }
-            if (IsKeyDown(KEY_UP)) {
-                player2PosY -= playerSpeed;
-            }
-
-
-            /* std::cerr << "Player position X: " << playerPosX << "\n";
-            std::cerr << "Player position Y: " << playerPosY << "\n";
-            std::cerr << "Player width: " << playerWidth << "\n";
-            std::cerr << "Player height: " << playerHeight << "\n";   
-
-            std::cerr << "Ball position X: " << ballPosX << "\n";
-            std::cerr << "Ball position X: " << ballPosY << "\n";
-            std::cerr << "Ball width: " << ballWidth << "\n";
-            std::cerr << "Ball height: " << ballHeight << "\n"; */
+            // Update ball position
+            Ball::x += (calcBallPosX(Ball::invertX, Ball::xModifier, Ball::speed));
+            Ball::y += (calcBallPosY(Ball::invertY, Ball::yModifier, Ball::speed));
 
             // Collision bs
-            player1Bounds = {player1PosX, player1PosY, playerWidth, playerHeight};
-            player2Bounds = {player2PosX, player2PosY, playerWidth, playerHeight};
-            ballBounds = {ballPosX, ballPosY, ballWidth, ballHeight};
+            Player1::player1Bounds = {Player1::x, Player1::y, Players::width, Players::height};
+            Player2::player2Bounds = {Player2::x, Player2::y, Players::width, Players::height};
+            Ball::bounds = {Ball::x, Ball::y, Ball::width, Ball::height};
 
-            if (CheckCollisionRecs(player1Bounds, ballBounds) || CheckCollisionRecs(player2Bounds, ballBounds)) {
-               invertBallDirectionH = !invertBallDirectionH;
-            }       
+            
+            if (CheckCollisionRecs(Player1::player1Bounds, Ball::bounds) || CheckCollisionRecs(Player2::player2Bounds, Ball::bounds)){
+                collisionLogic();
+            }            
             
 
+         /*   if (CheckCollisionRecs(player1Bounds, ballBounds)) {
+                invertBallDirectionH = !invertBallDirectionH;
+                xModifier = checkSubCollision(player1Bounds, ballBounds);
+            }
+            else if (CheckCollisionRecs(player2Bounds, ballBounds)) {
+                invertBallDirectionH = !invertBallDirectionH;
+                xModifier = -checkSubCollision(player2Bounds, ballBounds);
+            } */
 
+            // Detect input and update player position
+            if (IsKeyDown(KEY_S)) {
+                Player1::y += Players::speed;
+            }
+            if (IsKeyDown(KEY_W)) {
+                Player1::y -= Players::speed;
+            }
+            if (IsKeyDown(KEY_DOWN)) {
+                Player2::y += Players::speed;
+            }
+            if (IsKeyDown(KEY_UP)) {
+                Player2::y -= Players::speed;
+            }
+
+           
             // Change screen state
             if (IsKeyPressed(KEY_ENTER)) {
                 screen = "ENDING";
@@ -135,48 +173,47 @@ int main() {
         //DRAW 
         BeginDrawing();
         if (screen == "TITLE") {
-            ClearBackground(bgColor);
-            DrawText("Press Enter to Start", (screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, 80, txtColor);
+            ClearBackground(Interface::bgColor);
+            DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, 80, Interface::txtColor);
         }
         else if (screen == "GAME") {
-            ClearBackground(bgColor);
+            ClearBackground(Interface::bgColor);
             // Reset player position if out of bounds
-            if (player1PosY <= 0) {
-                player1PosY = 0;
+            if (Player1::y <= 0) {
+                Player1::y = 0;
             }
-            if ((player1PosY + playerHeight) >= screenHeight) {
-                player1PosY = screenHeight - playerHeight;
+            if ((Player1::y + Players::height) >= Interface::screenHeight) {
+                Player1::y = Interface::screenHeight - Players::height;
             }
-            if (player2PosY <= 0) {
-                player2PosY = 0;
+            if (Player2::y <= 0) {
+                Player2::y = 0;
             }
-            if ((player2PosY + playerHeight) >= screenHeight) {
-                player2PosY = screenHeight - playerHeight;
+            if ((Player2::y + Players::height) >= Interface::screenHeight) {
+                Player2::y = Interface::screenHeight - Players::height;
             }
 
             // Reset ball position if out of vertical bounds
-            if (ballPosY <= 0) {
-                ballPosY = 0;
-                invertBallDirectionV = !invertBallDirectionV;
-                std::cerr << invertBallDirectionV;
+            if (Ball::y <= 0) {
+                Ball::y = 0;
+                Ball::invertY = !Ball::invertY;
             }
-            if (ballPosY + ballHeight >= screenHeight) {
-                ballPosY = screenHeight - ballHeight;
-                invertBallDirectionV = !invertBallDirectionV;
+            if (Ball::y + Ball::height >= Interface::screenHeight) {
+                Ball::y = Interface::screenHeight - Ball::height;
+                Ball::invertY = !Ball::invertY;
             }
             // Reset screen state if ball goes out of horizontal bounds
-            if (ballPosX <= 0 || (ballPosX + ballWidth) >= screenWidth){
-                ballPosX = (screenWidth / 2) - ballWidth;
-                ballPosY = (screenHeight / 2) - ballHeight;
+            if (Ball::x <= 0 || (Ball::x + Ball::width) >= Interface::screenWidth){
+                Ball::x = (Interface::screenWidth / 2) - Ball::width;
+                Ball::y = (Interface::screenHeight / 2) - Ball::height;
             }
  
-            DrawRectangle(player1PosX, static_cast<int>(player1PosY), playerWidth, playerHeight, playerColor);
-            DrawRectangle(player2PosX, static_cast<int>(player2PosY), playerWidth, playerHeight, playerColor);
-            DrawRectangle(static_cast<int>(ballPosX), static_cast<int>(ballPosY), ballWidth, ballHeight, ballColor);
+            DrawRectangle(Player1::x, static_cast<int>(Player1::y), Players::width, Players::height, Players::color);
+            DrawRectangle(Player2::x, static_cast<int>(Player2::y), Players::width, Players::height, Players::color);
+            DrawRectangle(static_cast<int>(Ball::x), static_cast<int>(Ball::y), Ball::width, Ball::height, Ball::color);
         }        
         else if (screen == "ENDING") {
-            ClearBackground(bgColor);
-            DrawText("This is the Ending Screen", (screenWidth / 2 - MeasureText("This is the Ending Screen", 80) / 2), 75, 80, txtColor);
+            ClearBackground(Interface::bgColor);
+            DrawText("This is the Ending Screen", (Interface::screenWidth / 2 - MeasureText("This is the Ending Screen", 80) / 2), 75, 80, Interface::txtColor);
         }
         EndDrawing();
     }
