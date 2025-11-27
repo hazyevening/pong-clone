@@ -1,98 +1,66 @@
 #include <iostream>
 #include "raylib.h"
 #include <string> 
-
-namespace Interface {
-    constexpr int screenWidth {1920};
-    constexpr int screenHeight {1080};
-    constexpr Color txtColor {WHITE};
-    constexpr Color bgColor {BLACK};
-}
-
-// Refactor namespaces when I learn Classes
-namespace Players {
-    // general player variables
-    constexpr float height {150};
-    constexpr float width {20};
-    constexpr int speed {25};    
-    constexpr Color color {WHITE}; 
-    
-}
-
-namespace Player1 {
-    constexpr float x {100};
-    float y {(Interface::screenHeight / 2) - Players::height};    
-    Rectangle player1Bounds = {Player1::x, Player1::y, Players::width, Players::height};
-}
-
-namespace Player2{
-    constexpr float x {Interface::screenWidth - 100};
-    float y {(Interface::screenHeight / 2) - Players::height};        
-    Rectangle player2Bounds = {Player2::x, Player2::y, Players::width, Players::height};
-}
-
-namespace Ball {
-    constexpr float width {15};
-    constexpr float height {15};
-    float x {(Interface::screenWidth / 2) - Ball::width};
-    float y {(Interface::screenHeight / 2) - Ball::height};
-    float speed {15};    
-    float xModifier {0};
-    float yModifier {0};
-    bool invertY {false};
-    bool invertX {false};
-    Rectangle bounds = {Ball::x, Ball::y, Ball::width, Ball::height};
-    constexpr Color color {WHITE};
-    
-}
+#include "namespaces.h"
 
 
 
-float calcBallPosX(bool invert, bool xModifier, float speed) {
-
-    if (invert) {
-        speed = -(speed + xModifier);
+float calcBallPosX(float speed) {
+    if (Ball::invertX) {
+        speed = -(speed * (1.0f + Ball::xModifier));
     }
-    else if (!invert) {
-        speed += xModifier;
+    else if (!Ball::invertX) {
+        speed *= (1.0f + Ball::xModifier);
     }
 
+    std::cerr << "Ball xModifier inside calcPosX: " << Ball::xModifier << "\n";
+    std::cerr << "Ball yModifier inside calcPosX: " << Ball::yModifier << "\n";
     return speed;
 }
 
-float calcBallPosY(bool invert, bool yModifier, float speed) {
 
-    if (invert) {
-        speed = -(speed + yModifier);
+float calcBallPosY(float speed) {
+    if (Ball::invertY) {
+        speed = -(speed * (1.0f + Ball::yModifier));
     }
-    else if (!invert) {
-        speed += yModifier;
+    else if (!Ball::invertY) {
+        speed *= (1.0f + Ball::yModifier);
     }
 
+    std::cerr << "Ball xModifier inside calcPosY: " << Ball::xModifier << "\n";
+    std::cerr << "Ball yModifier inside calcPosY: " << Ball::yModifier << "\n";
     return speed;
 }
 
-void collisionLogic() {
+
+void collisionLogic(std::string player) {
+    Rectangle topHalf{};
+    Rectangle bottomHalf{};
+    if (player == "p1") {
+        topHalf = {Player1::x, Player1::y, Players::width, (Players::height / 2)};
+        bottomHalf = {Player1::x, Players::height / 2 + Player1::y, Players::width, (Players::height)};
+    }
+    else if (player == "p2") {
+        topHalf = {Player2::x, Player2::y, Players::width, (Players::height / 2)};
+        bottomHalf = {Player2::x, Players::height / 2 + Player2::y, Players::width, (Players::height)};
+    }
+    else {
+        std::cerr << "wtf";
+    }    
+
+    if (CheckCollisionRecs(topHalf, Ball::bounds)) {
+        Ball::xModifier = static_cast<double>(0.3f);
+        Ball::yModifier = -static_cast<double>(0.3f);
+        std::cerr << "top" << "\n";
+    }
+    else {
+        Ball::xModifier = -static_cast<double>(0.3f);
+        Ball::yModifier = +static_cast<double>(0.3f);
+        std::cerr << "bottom" << "\n";
+    }
     Ball::invertX = !Ball::invertX;
 }
 
-/*
-
-float checkSubCollision(Rectangle playerBounds, Rectangle ballBounds) {
-    Rectangle playerTopHalf = {playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height / 2 + playerBounds.y};
-    Rectangle playerBottomHalf = {playerBounds.x, (playerBounds.height / 2) + playerBounds.y, playerBounds.width, (playerBounds.height) + playerBounds.y};
-    // Rectangle(float x, float y, float width, float height)
-    
-    if (CheckCollisionRecs(playerTopHalf, ballBounds)) {
-        return 0.0f;   
-    }
-    else if (CheckCollisionRecs(playerBottomHalf, ballBounds)){
-        return 50.0f; 
-    }
-    else {
-        return 50000000000000.0f;    
-    }
-} */
 
 int main() {
 
@@ -117,30 +85,23 @@ int main() {
         else if (screen == "GAME") {
             ++framesCounter;
         
+            // Collision detection and logic
+            Player1::bounds = {Player1::x, Player1::y, Players::width, Players::height};
+            Player2::bounds = {Player2::x, Player2::y, Players::width, Players::height};
+            Ball::bounds = {Ball::x, Ball::y, Ball::width, Ball::height};
+            
+            if (CheckCollisionRecs(Player1::bounds, Ball::bounds)) {
+                collisionLogic("p1");
+            } else if (CheckCollisionRecs(Player2::bounds, Ball::bounds)) {
+                collisionLogic("p2");
+            }            
+   
 
             // Update ball position
-            Ball::x += (calcBallPosX(Ball::invertX, Ball::xModifier, Ball::speed));
-            Ball::y += (calcBallPosY(Ball::invertY, Ball::yModifier, Ball::speed));
-
-            // Collision bs
-            Player1::player1Bounds = {Player1::x, Player1::y, Players::width, Players::height};
-            Player2::player2Bounds = {Player2::x, Player2::y, Players::width, Players::height};
-            Ball::bounds = {Ball::x, Ball::y, Ball::width, Ball::height};
-
-            
-            if (CheckCollisionRecs(Player1::player1Bounds, Ball::bounds) || CheckCollisionRecs(Player2::player2Bounds, Ball::bounds)){
-                collisionLogic();
-            }            
-            
-
-         /*   if (CheckCollisionRecs(player1Bounds, ballBounds)) {
-                invertBallDirectionH = !invertBallDirectionH;
-                xModifier = checkSubCollision(player1Bounds, ballBounds);
-            }
-            else if (CheckCollisionRecs(player2Bounds, ballBounds)) {
-                invertBallDirectionH = !invertBallDirectionH;
-                xModifier = -checkSubCollision(player2Bounds, ballBounds);
-            } */
+            // std::cerr << "Ball speed before calcPosX: " << Ball::speed << "\n";
+            Ball::x += (calcBallPosX(Ball::speed));
+            // std::cerr << "Ball speed after calcPosX: " << Ball::speed << "\n";
+            Ball::y += (calcBallPosY(Ball::speed));
 
             // Detect input and update player position
             if (IsKeyDown(KEY_S)) {
@@ -174,7 +135,7 @@ int main() {
         BeginDrawing();
         if (screen == "TITLE") {
             ClearBackground(Interface::bgColor);
-            DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, 80, Interface::txtColor);
+            DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, Interface::txtSize, Interface::txtColor);
         }
         else if (screen == "GAME") {
             ClearBackground(Interface::bgColor);
@@ -207,7 +168,7 @@ int main() {
                 Ball::y = (Interface::screenHeight / 2) - Ball::height;
             }
  
-            DrawRectangle(Player1::x, static_cast<int>(Player1::y), Players::width, Players::height, Players::color);
+            DrawRectangle(Player1::x, static_cast<int>(Player1::y), Players::width, Players::height, Players::color); 
             DrawRectangle(Player2::x, static_cast<int>(Player2::y), Players::width, Players::height, Players::color);
             DrawRectangle(static_cast<int>(Ball::x), static_cast<int>(Ball::y), Ball::width, Ball::height, Ball::color);
         }        
