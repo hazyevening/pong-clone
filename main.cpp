@@ -13,8 +13,8 @@ float calcBallPosX(float speed) {
         speed *= (1.0f + Ball::xModifier);
     }
 
-    std::cerr << "Ball xModifier inside calcPosX: " << Ball::xModifier << "\n";
-    std::cerr << "Ball yModifier inside calcPosX: " << Ball::yModifier << "\n";
+    //std::cerr << "Ball xModifier inside calcPosX: " << Ball::xModifier << "\n";
+    //std::cerr << "Ball yModifier inside calcPosX: " << Ball::yModifier << "\n";
     return speed;
 }
 
@@ -27,31 +27,65 @@ float calcBallPosY(float speed) {
         speed *= (1.0f + Ball::yModifier);
     }
 
-    std::cerr << "Ball xModifier inside calcPosY: " << Ball::xModifier << "\n";
-    std::cerr << "Ball yModifier inside calcPosY: " << Ball::yModifier << "\n";
+    //std::cerr << "Ball xModifier inside calcPosY: " << Ball::xModifier << "\n";
+    //std::cerr << "Ball yModifier inside calcPosY: " << Ball::yModifier << "\n";
     return speed;
 }
 
 
 void collisionLogic(std::string player) {
-    Rectangle topHalf{};
-    Rectangle bottomHalf{};
+    Rectangle top{};
+    Rectangle centerTop{};
+    Rectangle centerBottom{};
+    Rectangle bottom{};
+
+    constexpr float quarterHeight {Players::height / 4};
+    constexpr float halfHeight {Players::height / 2};
+    constexpr float threeQuarterHeight {halfHeight + quarterHeight};
+
     if (player == "p1") {
-        topHalf = {Player1::x, Player1::y, Players::width, (Players::height / 2)};
-        bottomHalf = {Player1::x, Players::height / 2 + Player1::y, Players::width, (Players::height)};
+        top = {Player1::x, Player1::y, Players::width, quarterHeight};
+        centerTop = {Player1::x, quarterHeight + Player1::y, Players::width, quarterHeight};
+        centerBottom = {Player1::x, halfHeight + Player1::y, Players::width, quarterHeight};
+        bottom = {Player1::x, threeQuarterHeight + Player1::y, Players::width, quarterHeight};
     }
     else if (player == "p2") {
-        topHalf = {Player2::x, Player2::y, Players::width, (Players::height / 2)};
-        bottomHalf = {Player2::x, Players::height / 2 + Player2::y, Players::width, (Players::height)};
+        top = {Player2::x, Player2::y, Players::width, quarterHeight};
+        centerTop = {Player2::x, quarterHeight + Player2::y, Players::width, quarterHeight};
+        centerBottom = {Player2::x, halfHeight + Player2::y, Players::width, quarterHeight};
+        bottom = {Player2::x, threeQuarterHeight + Player2::y, Players::width, quarterHeight};
     }
     else {
         std::cerr << "wtf";
     }    
 
-    if (CheckCollisionRecs(topHalf, Ball::bounds)) {
+    std::cerr << "top pos y: " << top.y << "\n";
+    std::cerr << "top height: " << top.height << "\n";
+
+    std::cerr << "center-top pos y: " << centerTop.y << "\n";
+    std::cerr << "center-top height: " << centerTop.height << "\n";
+
+    std::cerr << "center-bottom y: " << centerBottom.y << "\n";    
+    std::cerr << "center-bottom height: : " << centerBottom.height << "\n";
+
+    std::cerr << "bottom pos y: " << bottom.y << "\n";
+    std::cerr << "bottom height: " << bottom.height << "\n";
+
+    std::cerr << "ball pos y: " << Ball::y << "\n";
+    if (CheckCollisionRecs(top, Ball::bounds)) {
         Ball::xModifier = static_cast<double>(0.3f);
         Ball::yModifier = -static_cast<double>(0.3f);
         std::cerr << "top" << "\n";
+    }
+    else if (CheckCollisionRecs(centerTop, Ball::bounds)) {
+        Ball::xModifier = static_cast<double>(0.3f);
+        Ball::yModifier = -static_cast<double>(0.3f);
+        std::cerr << "centerTop" << "\n";
+    }
+    else if (CheckCollisionRecs(centerBottom, Ball::bounds)) {
+        Ball::xModifier = -static_cast<double>(0.3f);
+        Ball::yModifier = +static_cast<double>(0.3f);
+        std::cerr << "centerBottom" << "\n";
     }
     else {
         Ball::xModifier = -static_cast<double>(0.3f);
@@ -60,7 +94,6 @@ void collisionLogic(std::string player) {
     }
     Ball::invertX = !Ball::invertX;
 }
-
 
 int main() {
 

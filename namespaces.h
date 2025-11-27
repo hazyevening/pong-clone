@@ -6,13 +6,13 @@ namespace Interface {
     constexpr int screenWidth {1920};
     constexpr int screenHeight {1080};
     constexpr Color txtColor {WHITE};
-    constexpr int txtSize {80};
+    constexpr int txtSize {110};
     constexpr Color bgColor {BLACK};
 }
 
 namespace Players {
     // general player variables
-    constexpr float height {150};
+    constexpr float height {80};
     constexpr float width {20};
     constexpr int speed {25};    
     constexpr Color color {WHITE}; 
