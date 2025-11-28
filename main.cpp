@@ -3,6 +3,31 @@
 #include "namespaces.h"
 #include <string> 
 
+void updateScore(bool invert) {
+    if (!invert) {
+        Player1::score ++;
+    }
+    else {
+        Player2::score ++;
+    }
+    std::cerr << "Player 1 Score: " << Player1::score << "\n";
+    std::cerr << "Player 2 Score: " << Player2::score << "\n";
+}
+
+void checkWinCondition() {
+    if (Player1::score >= Interface::winScore) {
+        Interface::screen = "ENDING";
+        Interface::winner = "p1";
+    }
+    else if (Player2::score >= Interface::winScore) {
+        Interface::screen = "ENDING";
+        Interface::winner = "p2";
+    }
+    else {
+        ;      
+    }
+}
+
 
 float calcBallPosX(float speed) {
     if (Ball::invertX) {
@@ -119,7 +144,7 @@ void collisionLogic(std::string player) {
 
 int main() {
 
-    std::string screen {"TITLE"};
+
 
     int framesCounter {};
 
@@ -130,15 +155,16 @@ int main() {
     while (!WindowShouldClose()) {
 
         //UPDATE    
-        if (screen == "TITLE") {
+        if (Interface::screen == "TITLE") {
             ++framesCounter;
             // Change screen state
             if (IsKeyPressed(KEY_ENTER)) {
-                screen = "GAME";
+                Interface::screen = "GAME";
             }
         }
-        else if (screen == "GAME") {
+        else if (Interface::screen == "GAME") {
             ++framesCounter;
+
         
             // Collision detection and logic
             Player1::bounds = {Player1::x, Player1::y, Players::width, Players::height};
@@ -169,29 +195,6 @@ int main() {
                 Player2::y -= Players::speed;
             }
 
-           
-            // Change screen state
-            if (IsKeyPressed(KEY_ENTER)) {
-                screen = "ENDING";
-            }
-        }
-        else if (screen == "ENDING") {
-            // Change screen state
-            if (IsKeyPressed(KEY_ENTER)) {
-                screen = "TITLE";
-            }
-        }
-        
-
-        //DRAW 
-        BeginDrawing();
-        if (screen == "TITLE") {
-            ClearBackground(Interface::bgColor);
-            DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, Interface::txtSize, Interface::txtColor);
-        }
-        else if (screen == "GAME") {
-            ClearBackground(Interface::bgColor);
-            // Reset player position if out of bounds
             if (Player1::y <= 0) {
                 Player1::y = 0;
             }
@@ -214,19 +217,52 @@ int main() {
                 Ball::y = Interface::screenHeight - Ball::height;
                 Ball::invertY = !Ball::invertY;
             }
-            // Reset screen state if ball goes out of horizontal bounds
+            // Reset screen state if ball goes out of horizontal bounds and update score
             if (Ball::x <= 0 || (Ball::x + Ball::width) >= Interface::screenWidth){
                 Ball::x = (Interface::screenWidth / 2) - Ball::width;
                 Ball::y = (Interface::screenHeight / 2) - Ball::height;
+                Ball::xModifier = 0;
+                Ball::yModifier = 0;
+                Ball::center = false;
+                updateScore(Ball::invertX);
+                checkWinCondition();
             }
+        }
+        else if (Interface::screen == "ENDING") {
+            // Change screen state
+            if (IsKeyPressed(KEY_ENTER)) {
+                Interface::screen = "TITLE";
+            }
+        }
+        
+
+        //DRAW 
+        BeginDrawing();
+        if (Interface::screen == "TITLE") {
+            ClearBackground(Interface::bgColor);
+            DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, Interface::txtSize, Interface::txtColor);
+        }
+        else if (Interface::screen == "GAME") {
+            ClearBackground(Interface::bgColor);
+            // Reset player position if out of bounds
+            DrawText(TextFormat("%i", Player1::score), (Interface::screenWidth / 4 - MeasureText(TextFormat("%i", Player1::score), 80) / 2), 75, Interface::txtSize, Interface::txtColor);
+            DrawText(TextFormat("%i", Player2::score), (Interface::screenWidth - (Interface::screenWidth / 4) - MeasureText(TextFormat("%i", Player2::score), 80) / 2), 75, Interface::txtSize, Interface::txtColor);
  
             DrawRectangle(Player1::x, static_cast<int>(Player1::y), Players::width, Players::height, Players::color); 
             DrawRectangle(Player2::x, static_cast<int>(Player2::y), Players::width, Players::height, Players::color);
             DrawRectangle(static_cast<int>(Ball::x), static_cast<int>(Ball::y), Ball::width, Ball::height, Ball::color);
         }        
-        else if (screen == "ENDING") {
+        else if (Interface::screen == "ENDING") {
             ClearBackground(Interface::bgColor);
-            DrawText("This is the Ending Screen", (Interface::screenWidth / 2 - MeasureText("This is the Ending Screen", 80) / 2), 75, 80, Interface::txtColor);
+            if (Interface::winner == "p1") {
+                DrawText("Congratulations Player 1!", (Interface::screenWidth / 2 - MeasureText("Congratulations Player 1", 80) / 2), 75, 80, Interface::txtColor);
+            }
+            else {
+                DrawText("Congratulations Player 2!", (Interface::screenWidth / 2 - MeasureText("Congratulations Player 1", 80) / 2), 75, 80, Interface::txtColor);
+            }
+            Player1::score = 0;
+            Player2::score = 0;
+            
         }
         EndDrawing();
     }
