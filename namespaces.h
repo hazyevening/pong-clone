@@ -12,7 +12,7 @@ namespace Interface {
 
 namespace Players {
     // general player variables
-    constexpr float height {80};
+    constexpr float height {75};
     constexpr float width {20};
     constexpr int speed {25};    
     constexpr Color color {WHITE}; 
@@ -23,12 +23,14 @@ namespace Player1 {
     constexpr float x {100};
     float y {(Interface::screenHeight / 2) - Players::height};    
     Rectangle bounds = {Player1::x, Player1::y, Players::width, Players::height};
+    int score {0};
 }
 
 namespace Player2{
     constexpr float x {Interface::screenWidth - 100};
     float y {(Interface::screenHeight / 2) - Players::height};        
     Rectangle bounds = {Player2::x, Player2::y, Players::width, Players::height};
+    int score {0};
 }
 
 namespace Ball {
@@ -41,6 +43,7 @@ namespace Ball {
     float yModifier {0};
     bool invertY {false};
     bool invertX {false};
+    bool center {false};
     Rectangle bounds = {Ball::x, Ball::y, Ball::width, Ball::height};
     constexpr Color color {WHITE};
     
