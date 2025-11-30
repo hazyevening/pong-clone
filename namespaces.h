@@ -6,7 +6,8 @@ namespace Interface {
     constexpr int screenWidth {1920};
     constexpr int screenHeight {1080};
     constexpr Color txtColor {WHITE};
-    constexpr int txtSize {80};
+    constexpr int txtSizeMedium {80};
+    constexpr int txtSizeLarge {120};
     constexpr Color bgColor {BLACK};
     constexpr int winScore {5};
     std::string winner {};

@@ -202,6 +202,7 @@ int main() {
             }
         }
         else if (Interface::screen == "ENDING") {
+            framesCounter++;
             // Change screen state
             if (IsKeyPressed(KEY_ENTER)) {
                 Interface::screen = "GAME";
@@ -213,13 +214,17 @@ int main() {
         BeginDrawing();
         if (Interface::screen == "TITLE") {
             ClearBackground(Interface::bgColor);
-            DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), 75, Interface::txtSize, Interface::txtColor);
+            DrawText("Pong Clone", (Interface::screenWidth / 2 - MeasureText("Pong Clone", Interface::txtSizeLarge) / 2), 75, Interface::txtSizeLarge, Interface::txtColor);
+            if ((framesCounter / 30) % 2 == 0) {
+                DrawText("Press Enter to Start", (Interface::screenWidth / 2 - MeasureText("Press Enter to Start", 80) / 2), ((Interface::screenHeight) - Interface::screenHeight / 9), Interface::txtSizeMedium, Interface::txtColor);
+            }
+            
         }
         else if (Interface::screen == "GAME") {
             ClearBackground(Interface::bgColor);
             // Reset player position if out of bounds
-            DrawText(TextFormat("%i", Player1::score), (Interface::screenWidth / 4 - MeasureText(TextFormat("%i", Player1::score), 80) / 2), 75, Interface::txtSize, Interface::txtColor);
-            DrawText(TextFormat("%i", Player2::score), (Interface::screenWidth - (Interface::screenWidth / 4) - MeasureText(TextFormat("%i", Player2::score), 80) / 2), 75, Interface::txtSize, Interface::txtColor);
+            DrawText(TextFormat("%i", Player1::score), (Interface::screenWidth / 4 - MeasureText(TextFormat("%i", Player1::score), 80) / 2), 75, Interface::txtSizeMedium, Interface::txtColor);
+            DrawText(TextFormat("%i", Player2::score), (Interface::screenWidth - (Interface::screenWidth / 4) - MeasureText(TextFormat("%i", Player2::score), 80) / 2), 75, Interface::txtSizeMedium, Interface::txtColor);
  
             DrawRectangle(Player1::x, static_cast<int>(Player1::y), Players::width, Players::height, Players::color); 
             DrawRectangle(Player2::x, static_cast<int>(Player2::y), Players::width, Players::height, Players::color);
@@ -233,7 +238,11 @@ int main() {
             else {
                 DrawText("Congratulations Player 2!", (Interface::screenWidth / 2 - MeasureText("Congratulations Player 1", 80) / 2), 75, 80, Interface::txtColor);
             }
-            DrawText("Press Enter to Play Again", (Interface::screenWidth / 2 - MeasureText("Press Enter to Play Again", Interface::txtSize) / 2 ), (Interface::screenHeight - (Interface::screenHeight / 9)), Interface::txtSize, Interface::txtColor);
+
+            if ((framesCounter / 30 ) % 2 == 0) {
+                DrawText("Press Enter to Play Again", (Interface::screenWidth / 2 - MeasureText("Press Enter to Play Again", Interface::txtSizeMedium) / 2 ), (Interface::screenHeight - (Interface::screenHeight / 9)), Interface::txtSizeMedium, Interface::txtColor);
+            }           
+            
             Player1::score = 0;
             Player2::score = 0;
             
