@@ -103,8 +103,6 @@ void collisionLogic(std::string player) {
         Ball::center = false;
     }
     else {
-        //Ball::xModifier = -static_cast<double>(0.3f);
-        //Ball::yModifier = +static_cast<double>(0.3f);
         Ball::invertY = !Ball::invertY;
         Ball::xModifier = -static_cast<double>(0.05f);
         Ball::yModifier = static_cast<double>(0.05f);
@@ -206,7 +204,7 @@ int main() {
         else if (Interface::screen == "ENDING") {
             // Change screen state
             if (IsKeyPressed(KEY_ENTER)) {
-                Interface::screen = "TITLE";
+                Interface::screen = "GAME";
             }
         }
         
@@ -235,6 +233,7 @@ int main() {
             else {
                 DrawText("Congratulations Player 2!", (Interface::screenWidth / 2 - MeasureText("Congratulations Player 1", 80) / 2), 75, 80, Interface::txtColor);
             }
+            DrawText("Press Enter to Play Again", (Interface::screenWidth / 2 - MeasureText("Press Enter to Play Again", Interface::txtSize) / 2 ), (Interface::screenHeight - (Interface::screenHeight / 9)), Interface::txtSize, Interface::txtColor);
             Player1::score = 0;
             Player2::score = 0;
             

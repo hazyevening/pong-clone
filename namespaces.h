@@ -1,13 +1,12 @@
 #ifndef NAMESPACES_H
 #define NAMESPACES_H
 
-// Refactor namespaces when I learn Classes
 namespace Interface {
     std::string screen {"TITLE"};
     constexpr int screenWidth {1920};
     constexpr int screenHeight {1080};
     constexpr Color txtColor {WHITE};
-    constexpr int txtSize {110};
+    constexpr int txtSize {80};
     constexpr Color bgColor {BLACK};
     constexpr int winScore {5};
     std::string winner {};
