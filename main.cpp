@@ -1,151 +1,11 @@
 #include <iostream>
 #include "raylib.h"
 #include "namespaces.h"
+#include "functions.h"
 #include <string> 
 
-void updateScore(bool invert) {
-    if (!invert) {
-        Player1::score ++;
-    }
-    else {
-        Player2::score ++;
-    }
-    std::cerr << "Player 1 Score: " << Player1::score << "\n";
-    std::cerr << "Player 2 Score: " << Player2::score << "\n";
-}
-
-void checkWinCondition() {
-    if (Player1::score >= Interface::winScore) {
-        Interface::screen = "ENDING";
-        Interface::winner = "p1";
-    }
-    else if (Player2::score >= Interface::winScore) {
-        Interface::screen = "ENDING";
-        Interface::winner = "p2";
-    }
-    else {
-        ;      
-    }
-}
-
-
-float calcBallPosX(float speed) {
-    if (Ball::invertX) {
-        speed = -(speed * (1.0f + Ball::xModifier));
-    }
-    else if (!Ball::invertX) {
-        speed *= (1.0f + Ball::xModifier);
-    }
-
-    //std::cerr << "Ball xModifier inside calcPosX: " << Ball::xModifier << "\n";
-    //std::cerr << "Ball yModifier inside calcPosX: " << Ball::yModifier << "\n";
-    return speed;
-}
-
-
-float calcBallPosY(float speed) {
-    if (Ball::center) {
-        speed = 0;
-    }
-    else if (Ball::invertY) {
-        speed = -(speed * (1.0f + Ball::yModifier));
-    }
-    else if (!Ball::invertY) {
-        speed *= (1.0f + Ball::yModifier);
-    }
-
-    //std::cerr << "Ball xModifier inside calcPosY: " << Ball::xModifier << "\n";
-    //std::cerr << "Ball yModifier inside calcPosY: " << Ball::yModifier << "\n";
-    return speed;
-}
-
-
-void collisionLogic(std::string player) {
-    Rectangle top{};
-    Rectangle centerTop{};
-    Rectangle center{};
-    Rectangle centerBottom{};
-    Rectangle bottom{};
-
-    constexpr float oneFifthHeight {Players::height / 5};
-
-    if (player == "p1") {
-        top = {Player1::x, Player1::y, Players::width, oneFifthHeight};
-        centerTop = {Player1::x, oneFifthHeight + Player1::y, Players::width, oneFifthHeight};
-        center = {Player1::x, oneFifthHeight * 2 + Player1::y, Players::width, oneFifthHeight};
-        centerBottom = {Player1::x, oneFifthHeight * 3 + Player1::y, Players::width, oneFifthHeight};
-        bottom = {Player1::x, oneFifthHeight * 4 + Player1::y, Players::width, oneFifthHeight};
-    }
-    else if (player == "p2") {
-        top = {Player2::x, Player2::y, Players::width, oneFifthHeight};
-        centerTop = {Player2::x, oneFifthHeight + Player2::y, Players::width, oneFifthHeight};
-        center = {Player2::x, oneFifthHeight * 2 + Player2::y, Players::width, oneFifthHeight};
-        centerBottom = {Player2::x, oneFifthHeight * 3 + Player2::y, Players::width, oneFifthHeight};
-        bottom = {Player2::x, oneFifthHeight * 4 + Player2::y, Players::width, oneFifthHeight};
-    }
-    else {
-        std::cerr << "wtf";
-    }    
-
-    std::cerr << "top pos y: " << top.y << "\n";
-    std::cerr << "top height: " << top.height << "\n";
-
-    std::cerr << "center-top pos y: " << centerTop.y << "\n";
-    std::cerr << "center-top height: " << centerTop.height << "\n";
-
-    std::cerr << "center pos y: " << center.y << "\n";
-    std::cerr << "center height: " << center.height << "\n";
-
-    std::cerr << "center-bottom y: " << centerBottom.y << "\n";    
-    std::cerr << "center-bottom height: : " << centerBottom.height << "\n";
-
-    std::cerr << "bottom pos y: " << bottom.y << "\n";
-    std::cerr << "bottom height: " << bottom.height << "\n";
-
-    std::cerr << "ball pos y: " << Ball::y << "\n";   
-    
-
-    if (CheckCollisionRecs(top, Ball::bounds)) {
-        //Ball::xModifier = static_cast<double>(0.3f);
-        //Ball::yModifier = -static_cast<double>(0.3f);
-        Ball::invertY = !Ball::invertY;
-        Ball::xModifier = static_cast<double>(0.05f);
-        Ball::yModifier = -static_cast<double>(0.05f);
-        Ball::center = false;
-        std::cerr << "top" << "\n";
-    }
-    else if (CheckCollisionRecs(centerTop, Ball::bounds)) {
-        Ball::xModifier = static_cast<double>(0.15f);
-        Ball::yModifier = -static_cast<double>(0.15f);
-        Ball::center = false;
-        std::cerr << "centerTop" << "\n";
-    }
-    else if (CheckCollisionRecs(center, Ball::bounds)) {
-        Ball::center = true;
-        std::cerr << "center" << "\n";
-    }
-    else if (CheckCollisionRecs(centerBottom, Ball::bounds)) {
-        Ball::xModifier = -static_cast<double>(0.15f);
-        Ball::yModifier = +static_cast<double>(0.15f);
-        Ball::center = false;
-        std::cerr << "centerBottom" << "\n";
-    }
-    else {
-        //Ball::xModifier = -static_cast<double>(0.3f);
-        //Ball::yModifier = +static_cast<double>(0.3f);
-        Ball::invertY = !Ball::invertY;
-        Ball::xModifier = -static_cast<double>(0.05f);
-        Ball::yModifier = static_cast<double>(0.05f);
-        Ball::center = false;
-        std::cerr << "bottom" << "\n";
-    }
-    Ball::invertX = !Ball::invertX;
-}
 
 int main() {
-
-
-
     int framesCounter {};
 
     InitWindow(Interface::screenWidth, Interface::screenHeight, "raylib test");
@@ -195,6 +55,7 @@ int main() {
                 Player2::y -= Players::speed;
             }
 
+            // Reset paddles position if out of vertical bounds
             if (Player1::y <= 0) {
                 Player1::y = 0;
             }
@@ -217,6 +78,7 @@ int main() {
                 Ball::y = Interface::screenHeight - Ball::height;
                 Ball::invertY = !Ball::invertY;
             }
+
             // Reset screen state if ball goes out of horizontal bounds and update score
             if (Ball::x <= 0 || (Ball::x + Ball::width) >= Interface::screenWidth){
                 Ball::x = (Interface::screenWidth / 2) - Ball::width;
